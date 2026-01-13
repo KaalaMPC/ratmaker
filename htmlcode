@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Rat Character Builder</title>
+
+<style>
+  body { background:#1b1b1b; font-family: monospace; color:white; text-align:center; }
+  .section { display:none; }
+  .section.active { display:block; }
+
+  
+  .preview-box {
+    position: relative;
+    width: 128px;
+    height: 128px;
+    margin: 20px auto;
+    background: #2a2a2a;
+    border: 2px solid #444;
+    image-rendering: pixelated;
+  }
+
+  .preview-box img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 128px;
+    height: 128px;
+    pointer-events: none;
+  }
+
+  .layer-rat { z-index: 1; }
+  .layer-hat { z-index: 2; }
+
+  /* Carousel */
+  .carousel { display: flex; align-items: center; justify-content: center; margin-top: 20px; }
+  .carousel button { font-size: 24px; padding: 10px; margin: 0 20px; cursor: pointer; }
+  .carousel img { width: 128px; height: 128px; background: #2a2a2a; image-rendering: pixelated; }
+
+  #sheet { background:#eee; color:#000; padding:20px; width:300px; margin:20px auto; border-radius: 10px; }
+  input, textarea { width:80%; padding:10px; margin:10px; font-size:16px; }
+  button { padding:10px 20px; font-size:16px; margin-top:20px; cursor:pointer; }
+</style>
+</head>
+
+<body>
+
+<h1>🐀 Rat Character Builder</h1>
+
+<div id="step1" class="section active">
+  <h2>Pick Your Rat</h2>
+  <div class="carousel">
+    <button onclick="prevRat()">⬅️</button>
+    <img id="current-rat-display" src="">
+    <button onclick="nextRat()">➡️</button>
+  </div>
+  <button onclick="next(2)">Next: Choose Style</button>
+</div>
+
+<div id="step2" class="section">
+  <h2>Pick a Hat</h2>
+  
+  <div class="preview-box">
+    <img id="main-rat-layer" class="layer-rat" src="">
+    <img id="main-hat-layer" class="layer-hat" src="">
+  </div>
+
+  <div class="carousel">
+    <button onclick="prevHat()">⬅️</button>
+    <img id="current-hat-display" src="">
+    <button onclick="nextHat()">➡️</button>
+  </div>
+  <button onclick="next(3)">Next: Details</button>
+</div>
+
+<div id="step3" class="section">
+  <h2>Your Info</h2>
+  <input id="name" placeholder="Rat Name">
+  <input id="majors" placeholder="Major(s)">
+  <input id="minors" placeholder="Minor(s)">
+  <input id="career" placeholder="Goal Career">
+  <textarea id="fact" placeholder="A Fun Fact"></textarea>
+  <button onclick="buildSheet()">Finish</button>
+</div>
+
+<div id="step4" class="section">
+  <h2>Your Character Sheet</h2>
+  <div id="sheet">
+    <div class="preview-box">
+      <img id="sheet-rat" class="layer-rat">
+      <img id="sheet-hat" class="layer-hat">
+    </div>
+    <p><b>Name:</b> <span id="sheet-name"></span></p>
+    <p><b>Major(s):</b> <span id="sheet-majors"></span></p>
+    <p><b>Minor(s):</b> <span id="sheet-minors"></span></p>
+    <p><b>Career:</b> <span id="sheet-career"></span></p>
+    <p style="white-space: pre-wrap;"><b>Fun Fact:</b> <span id="sheet-fact"></span></p>
+  </div>
+  <p>📸 Take a screenshot!</p>
+</div>
+
+<script>
+let selectedRat = "";
+let selectedHat = "";
+
+const rats = [
+  "https://i.imgur.com/zWIPpDj.png", "https://i.imgur.com/kfInSFz.png", "https://i.imgur.com/cUYHx3V.png", "https://i.imgur.com/d5jCDAE.png", "https://i.imgur.com/e5jfPyw.png",
+  "https://i.imgur.com/CchZiSP.png", "https://i.imgur.com/MD9Fv6t.png",
+  "https://i.imgur.com/NOkGt4S.png", "https://i.imgur.com/FzYZWyQ.png",
+  "https://i.imgur.com/Jao9gph.png", "https://i.imgur.com/9zDaEXx.png",
+  "https://i.imgur.com/DLLQWNL.png", "https://i.imgur.com/1B4XfMl.png"
+];
+
+const hats = [
+  "https://i.imgur.com/mC23wAQ.png",
+  "https://i.imgur.com/4zu2YEW.png",
+  "https://i.imgur.com/hv8MD1c.png",
+  "https://i.imgur.com/zOJES1M.png",
+  "https://i.imgur.com/Olxvk6Z.png",
+  "https://i.imgur.com/3dz2Ghd.png",
+  "https://i.imgur.com/vhA3JzH.png",
+  "https://i.imgur.com/rZEHisL.png",
+  "https://i.imgur.com/XzITMfg.png",
+  "https://i.imgur.com/Bp2obNg.png",
+  "https://i.imgur.com/pZs2uoZ.png",
+  "https://i.imgur.com/HMaz9iH.png",
+  "https://i.imgur.com/KEe10LS.png",
+  "https://i.imgur.com/DdUqpLs.png",
+  "https://i.imgur.com/WaE73Pu.png",
+  "https://i.imgur.com/DFtahlh.png",
+];
+
+let ratIdx = 0;
+let hatIdx = 0;
+
+function updateRat() {
+  selectedRat = rats[ratIdx];
+  document.getElementById("current-rat-display").src = selectedRat;
+  // Also update it in the Step 2 preview box immediately
+  document.getElementById("main-rat-layer").src = selectedRat;
+}
+
+function updateHat() {
+  selectedHat = hats[hatIdx];
+  document.getElementById("current-hat-display").src = selectedHat;
+  document.getElementById("main-hat-layer").src = selectedHat;
+}
+
+// Button controls
+function prevRat() { ratIdx = (ratIdx - 1 + rats.length) % rats.length; updateRat(); }
+function nextRat() { ratIdx = (ratIdx + 1) % rats.length; updateRat(); }
+function prevHat() { hatIdx = (hatIdx - 1 + hats.length) % hats.length; updateHat(); }
+function nextHat() { hatIdx = (hatIdx + 1) % hats.length; updateHat(); }
+
+function next(n) {
+  document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+  document.getElementById("step" + n).classList.add("active");
+}
+
+function buildSheet() {
+  document.getElementById("sheet-rat").src = selectedRat;
+  document.getElementById("sheet-hat").src = selectedHat;
+  document.getElementById("sheet-name").innerText = document.getElementById("name").value;
+  document.getElementById("sheet-majors").innerText = document.getElementById("majors").value;
+  document.getElementById("sheet-minors").innerText = document.getElementById("minors").value;
+  document.getElementById("sheet-career").innerText = document.getElementById("career").value;
+  document.getElementById("sheet-fact").innerText = document.getElementById("fact").value;
+  
+  next(4);
+}
+
+updateRat();
+updateHat();
+</script>
+
+</body>
+</html>
